@@ -633,7 +633,22 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('API 호출 실패');
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('API Error Response:', errorData);
+                    console.error('Status:', response.status, response.statusText);
+
+                    let errorMessage = 'API 오류';
+                    if (response.status === 400) {
+                        errorMessage = 'API Key가 올바르지 않습니다. 설정에서 확인해주세요.';
+                    } else if (response.status === 429) {
+                        errorMessage = 'API 할당량 초과. 잠시 후 다시 시도해주세요.';
+                    } else if (response.status === 403) {
+                        errorMessage = 'API Key 권한이 없습니다. Key를 확인해주세요.';
+                    } else if (errorData.error?.message) {
+                        errorMessage = errorData.error.message;
+                    }
+
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
@@ -669,8 +684,30 @@
 
             } catch (error) {
                 hideLoading();
+                console.error('======= 에러 발생 =======');
                 console.error('Error:', error);
-                showToast('생성 중 오류가 발생했습니다. API Key를 확인해주세요.', 'error');
+                console.error('Error Message:', error.message);
+                console.error('=========================');
+
+                // 더 구체적인 에러 메시지
+                let userMessage = '생성 중 오류가 발생했습니다.';
+
+                if (error.message.includes('API Key')) {
+                    userMessage = error.message;
+                } else if (error.message.includes('API 오류') || error.message.includes('할당량')) {
+                    userMessage = error.message;
+                } else if (error.message.includes('파싱')) {
+                    userMessage = 'AI 응답 처리 실패. 다시 시도해주세요.';
+                    console.error('브라우저 콘솔(F12)을 확인하여 자세한 오류를 확인하세요.');
+                } else if (error.message.includes('candidates')) {
+                    userMessage = 'AI가 응답을 생성하지 못했습니다. 이미지나 설정을 변경해보세요.';
+                } else if (error.message.includes('fetch')) {
+                    userMessage = '네트워크 오류. 인터넷 연결을 확인해주세요.';
+                } else {
+                    userMessage = error.message + ' (F12 콘솔 확인)';
+                }
+
+                showToast(userMessage, 'error');
             }
         }
 
