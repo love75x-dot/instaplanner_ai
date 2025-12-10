@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insta Feed Master 4.0 - Multi-Image Edition</title>
+    <title>Insta Feed Master 5.0 - High-Res Edition</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,6 @@
 
         .iphone-frame {
             width: 375px;
-            height: 812px;
             background: #000;
             border-radius: 40px;
             padding: 12px;
@@ -49,11 +48,19 @@
 
         .iphone-screen {
             width: 100%;
-            height: 100%;
             background: #fff;
             border-radius: 32px;
             overflow-y: auto;
             overflow-x: hidden;
+            max-height: 750px;
+        }
+
+        /* High-Res Canvas Display */
+        #editCanvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            background: #000;
         }
 
         .carousel-arrow {
@@ -200,6 +207,20 @@
             border-color: #dc2743;
             box-shadow: 0 0 0 2px rgba(220, 39, 67, 0.2);
         }
+
+        /* Sticky Preview Panel */
+        .preview-panel {
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+
+        @media (max-width: 1024px) {
+            .preview-panel {
+                position: relative;
+                top: 0;
+            }
+        }
     </style>
 </head>
 
@@ -214,8 +235,8 @@
                         <i class="fab fa-instagram text-white text-2xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Insta Feed Master 4.0</h1>
-                        <p class="text-sm text-gray-500">Multi-Image Edition</p>
+                        <h1 class="text-2xl font-bold text-gray-900">Insta Feed Master 5.0</h1>
+                        <p class="text-sm text-gray-500">High-Res Edition</p>
                     </div>
                 </div>
                 <button onclick="openSettings()" class="p-3 rounded-xl hover:bg-gray-100 transition">
@@ -274,11 +295,11 @@
                     </div>
                 </div>
 
-                <!-- Logo Upload & Settings -->
+                <!-- Logo Studio (Moved to Top!) -->
                 <div class="bg-white rounded-3xl shadow-lg p-8">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">
                         <i class="fas fa-stamp mr-2 text-blue-500"></i>
-                        로고 오버레이
+                        로고 스튜디오
                     </h2>
 
                     <!-- Logo Upload -->
@@ -317,8 +338,16 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">크기: <span
                                 id="logoSizeValue">20</span>%</label>
-                        <input type="range" id="logoSize" min="10" max="50" value="20" class="w-full"
+                        <input type="range" id="logoSize" min="1" max="50" value="20" class="w-full"
                             oninput="updateLogoSize(this.value)">
+                    </div>
+
+                    <!-- Margin Slider (NEW!) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">여백: <span
+                                id="logoMarginValue">3</span>%</label>
+                        <input type="range" id="logoMargin" min="0" max="10" value="3" class="w-full"
+                            oninput="updateLogoMargin(this.value)">
                     </div>
 
                     <!-- Opacity Slider -->
@@ -341,14 +370,14 @@
                 <button onclick="downloadCurrentImage()" id="downloadBtn"
                     class="hidden w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 hover:shadow-xl transition">
                     <i class="fas fa-download"></i>
-                    <span>현재 이미지 다운로드</span>
+                    <span>현재 이미지 고화질 다운로드</span>
                 </button>
 
             </div>
 
-            <!-- Right Panel: iPhone Mockup -->
-            <div class="flex items-start justify-center sticky top-24">
-                <div class="iphone-frame relative">
+            <!-- Right Panel: iPhone Mockup (STICKY!) -->
+            <div class="preview-panel">
+                <div class="iphone-frame relative mx-auto">
                     <div class="iphone-notch"></div>
                     <div class="iphone-screen">
 
@@ -364,8 +393,8 @@
                         </div>
 
                         <!-- Carousel Image Area -->
-                        <div class="relative carousel-container bg-black" style="aspect-ratio: 1/1;">
-                            <canvas id="editCanvas" class="w-full h-full"></canvas>
+                        <div class="relative carousel-container bg-black">
+                            <canvas id="editCanvas"></canvas>
 
                             <!-- Navigation Arrows -->
                             <button class="carousel-arrow prev" id="prevBtn" onclick="prevImage()">
@@ -441,7 +470,7 @@
                     class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition">
                 <p class="text-xs text-gray-500 mt-2">
                     <i class="fas fa-info-circle mr-1"></i>
-                    v1beta 엔드포인트를 사용합니다
+                    v1beta 엔드포인트 / 고화질 다운로드
                 </p>
             </div>
 
@@ -481,6 +510,7 @@
         let aspectRatio = '1:1';
         let logoPosition = 'bottom-left';
         let logoSize = 20;
+        let logoMargin = 3;  // NEW: Logo margin percentage
         let logoOpacity = 80;
         let generatedCaption = '';
         let generatedHashtags = '';
@@ -665,10 +695,16 @@
             renderCanvas();
         }
 
-        // Logo Size & Opacity
+        // Logo Size, Margin & Opacity
         function updateLogoSize(value) {
             logoSize = parseInt(value);
             document.getElementById('logoSizeValue').textContent = value;
+            renderCanvas();
+        }
+
+        function updateLogoMargin(value) {
+            logoMargin = parseInt(value);
+            document.getElementById('logoMarginValue').textContent = value;
             renderCanvas();
         }
 
@@ -678,75 +714,89 @@
             renderCanvas();
         }
 
-        // Render Canvas
+        // ===== HIGH-RESOLUTION CANVAS RENDERING (v5.0 FIX!) =====
         function renderCanvas() {
             if (images.length === 0) return;
 
             const canvas = document.getElementById('editCanvas');
             const ctx = canvas.getContext('2d');
-            const currentImage = images[currentImageIndex].data;
+            const img = images[currentImageIndex].data;
 
-            // Set canvas size
-            let canvasWidth, canvasHeight;
+            // Get original image dimensions
+            const naturalW = img.naturalWidth;
+            const naturalH = img.naturalHeight;
+
+            // Calculate crop area based on aspect ratio (CENTER CROP)
+            let sx, sy, sWidth, sHeight;
+
             if (aspectRatio === '1:1') {
-                canvasWidth = canvasHeight = 600;
+                // Square: crop to shortest side, centered
+                const size = Math.min(naturalW, naturalH);
+                sWidth = sHeight = size;
+                sx = (naturalW - size) / 2;
+                sy = (naturalH - size) / 2;
             } else if (aspectRatio === '4:5') {
-                canvasWidth = 480;
-                canvasHeight = 600;
+                // 4:5 ratio: calculate based on image orientation, centered
+                const targetRatio = 4 / 5;
+                const imgRatio = naturalW / naturalH;
+
+                if (imgRatio > targetRatio) {
+                    // Image is wider than 4:5, crop width
+                    sHeight = naturalH;
+                    sWidth = sHeight * targetRatio;
+                    sx = (naturalW - sWidth) / 2;
+                    sy = 0;
+                } else {
+                    // Image is taller than 4:5, crop height
+                    sWidth = naturalW;
+                    sHeight = sWidth / targetRatio;
+                    sx = 0;
+                    sy = (naturalH - sHeight) / 2;
+                }
             } else {
-                canvasWidth = currentImage.width;
-                canvasHeight = currentImage.height;
+                // Original: use full image
+                sx = sy = 0;
+                sWidth = naturalW;
+                sHeight = naturalH;
             }
 
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+            // Set Canvas size to cropped dimensions (ORIGINAL RESOLUTION!)
+            canvas.width = sWidth;
+            canvas.height = sHeight;
 
             // Clear canvas
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx.clearRect(0, 0, sWidth, sHeight);
 
-            // Draw image (cropped to fit aspect ratio)
-            const imgAspect = currentImage.width / currentImage.height;
-            const canvasAspect = canvasWidth / canvasHeight;
+            // Draw cropped image at full resolution
+            ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
 
-            let drawWidth, drawHeight, offsetX, offsetY;
-
-            if (imgAspect > canvasAspect) {
-                drawHeight = canvasHeight;
-                drawWidth = drawHeight * imgAspect;
-                offsetX = -(drawWidth - canvasWidth) / 2;
-                offsetY = 0;
-            } else {
-                drawWidth = canvasWidth;
-                drawHeight = drawWidth / imgAspect;
-                offsetX = 0;
-                offsetY = -(drawHeight - canvasHeight) / 2;
-            }
-
-            ctx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
-
-            // Draw logo
+            // Draw logo overlay (if exists)
             if (logoImage) {
-                const logoWidth = canvasWidth * (logoSize / 100);
+                // Calculate logo size based on canvas width (maintains resolution)
+                const logoWidth = canvas.width * (logoSize / 100);
                 const logoHeight = (logoImage.height / logoImage.width) * logoWidth;
 
-                let logoX, logoY;
-                const padding = 20;
+                // Calculate margin based on canvas size
+                const padding = canvas.width * (logoMargin / 100);
 
-                // Calculate position
+                // Calculate logo position
+                let logoX, logoY;
+
                 const positions = {
                     'top-left': [padding, padding],
-                    'top-center': [(canvasWidth - logoWidth) / 2, padding],
-                    'top-right': [canvasWidth - logoWidth - padding, padding],
-                    'middle-left': [padding, (canvasHeight - logoHeight) / 2],
-                    'middle-center': [(canvasWidth - logoWidth) / 2, (canvasHeight - logoHeight) / 2],
-                    'middle-right': [canvasWidth - logoWidth - padding, (canvasHeight - logoHeight) / 2],
-                    'bottom-left': [padding, canvasHeight - logoHeight - padding],
-                    'bottom-center': [(canvasWidth - logoWidth) / 2, canvasHeight - logoHeight - padding],
-                    'bottom-right': [canvasWidth - logoWidth - padding, canvasHeight - logoHeight - padding]
+                    'top-center': [(canvas.width - logoWidth) / 2, padding],
+                    'top-right': [canvas.width - logoWidth - padding, padding],
+                    'middle-left': [padding, (canvas.height - logoHeight) / 2],
+                    'middle-center': [(canvas.width - logoWidth) / 2, (canvas.height - logoHeight) / 2],
+                    'middle-right': [canvas.width - logoWidth - padding, (canvas.height - logoHeight) / 2],
+                    'bottom-left': [padding, canvas.height - logoHeight - padding],
+                    'bottom-center': [(canvas.width - logoWidth) / 2, canvas.height - logoHeight - padding],
+                    'bottom-right': [canvas.width - logoWidth - padding, canvas.height - logoHeight - padding]
                 };
 
                 [logoX, logoY] = positions[logoPosition];
 
+                // Apply opacity and draw logo
                 ctx.globalAlpha = logoOpacity / 100;
                 ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
                 ctx.globalAlpha = 1.0;
@@ -892,17 +942,19 @@
             `;
         }
 
-        // Download Current Image
+        // ===== HIGH-QUALITY DOWNLOAD (v5.0 FIX!) =====
         function downloadCurrentImage() {
             if (images.length === 0) return;
 
             const canvas = document.getElementById('editCanvas');
             const link = document.createElement('a');
-            link.download = `insta-feed-${currentImageIndex + 1}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.download = `insta-feed-highres-${currentImageIndex + 1}.jpg`;
+
+            // Use JPEG with maximum quality (1.0)
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
             link.click();
 
-            showToast('이미지가 다운로드되었습니다 ✓', 'success');
+            showToast('고화질 이미지가 다운로드되었습니다 ✓', 'success');
         }
 
         // Settings Modal
