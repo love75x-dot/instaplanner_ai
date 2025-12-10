@@ -1,37 +1,38 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Insta Feed Master 2.0 - AI 인스타그램 캡션 생성기</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-    
+
     <style>
         * {
             font-family: 'Pretendard', 'Inter', sans-serif;
         }
-        
+
         /* Instagram Gradient */
         .instagram-gradient {
             background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
         }
-        
+
         /* Glassmorphism Effect */
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         /* iPhone Mockup Styles */
         .iphone-frame {
             width: 375px;
@@ -42,7 +43,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: relative;
         }
-        
+
         .iphone-notch {
             position: absolute;
             top: 0;
@@ -54,7 +55,7 @@
             border-radius: 0 0 20px 20px;
             z-index: 10;
         }
-        
+
         .iphone-screen {
             width: 100%;
             height: 100%;
@@ -63,21 +64,21 @@
             overflow-y: auto;
             overflow-x: hidden;
         }
-        
+
         /* Custom Scrollbar */
         .iphone-screen::-webkit-scrollbar {
             width: 4px;
         }
-        
+
         .iphone-screen::-webkit-scrollbar-track {
             background: transparent;
         }
-        
+
         .iphone-screen::-webkit-scrollbar-thumb {
             background: #ccc;
             border-radius: 10px;
         }
-        
+
         /* Loading Animation */
         .spinner {
             border: 3px solid rgba(0, 0, 0, 0.1);
@@ -87,11 +88,13 @@
             height: 40px;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         /* Toast Notification */
         .toast {
             position: fixed;
@@ -105,46 +108,47 @@
             z-index: 1000;
             animation: slideIn 0.3s ease-out;
         }
-        
+
         @keyframes slideIn {
             from {
                 transform: translateY(100px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
             }
         }
-        
+
         /* Drag & Drop Area */
         .drag-area {
             border: 2px dashed #d1d5db;
             transition: all 0.3s ease;
         }
-        
+
         .drag-area.dragover {
             border-color: #dc2743;
             background: rgba(220, 39, 67, 0.05);
         }
-        
+
         /* Button Hover Effects */
         .btn-primary {
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(220, 39, 67, 0.3);
         }
-        
+
         /* Instagram Post Image */
         .insta-post-img {
             width: 100%;
             aspect-ratio: 1 / 1;
             object-fit: cover;
         }
-        
+
         /* Responsive */
         @media (max-width: 1024px) {
             .iphone-frame {
@@ -152,7 +156,7 @@
                 height: 693px;
             }
         }
-        
+
         @media (max-width: 768px) {
             .iphone-frame {
                 width: 100%;
@@ -163,8 +167,9 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
-    
+
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -184,102 +189,111 @@
             </div>
         </div>
     </header>
-    
+
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
+
             <!-- Left Panel: Control Panel -->
             <div class="space-y-6">
-                
+
                 <!-- Image Upload Area -->
                 <div class="bg-white rounded-3xl shadow-lg p-8">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">
                         <i class="fas fa-image mr-2 text-pink-500"></i>
                         이미지 업로드
                     </h2>
-                    <div id="dropArea" class="drag-area rounded-2xl p-12 text-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                    <div id="dropArea"
+                        class="drag-area rounded-2xl p-12 text-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                         <i class="fas fa-cloud-upload-alt text-6xl text-gray-300 mb-4"></i>
                         <p class="text-gray-600 font-medium mb-2">사진을 여기에 놓으세요</p>
                         <p class="text-sm text-gray-400">또는 클릭하여 파일 선택</p>
                         <input type="file" id="fileInput" accept="image/*" class="hidden">
                     </div>
                 </div>
-                
+
                 <!-- Options -->
                 <div class="bg-white rounded-3xl shadow-lg p-8">
                     <h2 class="text-xl font-semibold text-gray-900 mb-6">
                         <i class="fas fa-sliders-h mr-2 text-purple-500"></i>
                         옵션 설정
                     </h2>
-                    
+
                     <!-- Mood Selection -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-3">분위기</label>
                         <div class="grid grid-cols-2 gap-3">
                             <label class="relative">
                                 <input type="radio" name="mood" value="감성적인" checked class="peer hidden">
-                                <div class="border-2 border-gray-200 peer-checked:border-pink-500 peer-checked:bg-pink-50 rounded-xl p-3 cursor-pointer transition text-center">
+                                <div
+                                    class="border-2 border-gray-200 peer-checked:border-pink-500 peer-checked:bg-pink-50 rounded-xl p-3 cursor-pointer transition text-center">
                                     <i class="fas fa-heart text-pink-500"></i>
                                     <span class="block text-sm font-medium mt-1">감성적인</span>
                                 </div>
                             </label>
                             <label class="relative">
                                 <input type="radio" name="mood" value="유머러스한" class="peer hidden">
-                                <div class="border-2 border-gray-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 rounded-xl p-3 cursor-pointer transition text-center">
+                                <div
+                                    class="border-2 border-gray-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 rounded-xl p-3 cursor-pointer transition text-center">
                                     <i class="fas fa-laugh text-yellow-500"></i>
                                     <span class="block text-sm font-medium mt-1">유머러스한</span>
                                 </div>
                             </label>
                             <label class="relative">
                                 <input type="radio" name="mood" value="전문적인" class="peer hidden">
-                                <div class="border-2 border-gray-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 rounded-xl p-3 cursor-pointer transition text-center">
+                                <div
+                                    class="border-2 border-gray-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 rounded-xl p-3 cursor-pointer transition text-center">
                                     <i class="fas fa-briefcase text-blue-500"></i>
                                     <span class="block text-sm font-medium mt-1">전문적인</span>
                                 </div>
                             </label>
                             <label class="relative">
                                 <input type="radio" name="mood" value="담백한" class="peer hidden">
-                                <div class="border-2 border-gray-200 peer-checked:border-gray-500 peer-checked:bg-gray-50 rounded-xl p-3 cursor-pointer transition text-center">
+                                <div
+                                    class="border-2 border-gray-200 peer-checked:border-gray-500 peer-checked:bg-gray-50 rounded-xl p-3 cursor-pointer transition text-center">
                                     <i class="fas fa-align-left text-gray-500"></i>
                                     <span class="block text-sm font-medium mt-1">담백한</span>
                                 </div>
                             </label>
                         </div>
                     </div>
-                    
+
                     <!-- Language Selection -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-3">언어</label>
-                        <select id="language" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition">
+                        <select id="language"
+                            class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition">
                             <option value="한국어">한국어</option>
                             <option value="영어">영어</option>
                             <option value="한영혼용">한영 혼용</option>
                         </select>
                     </div>
-                    
+
                     <!-- TMI Input -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-3">오늘의 TMI (선택사항)</label>
-                        <textarea id="tmiInput" rows="3" placeholder="예: 친구와 홍대에서 저녁 먹었어요" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition resize-none"></textarea>
+                        <textarea id="tmiInput" rows="3" placeholder="예: 친구와 홍대에서 저녁 먹었어요"
+                            class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition resize-none"></textarea>
                     </div>
                 </div>
-                
+
                 <!-- Generate Button -->
-                <button onclick="generateCaption()" class="btn-primary w-full instagram-gradient text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2">
+                <button onclick="generateCaption()"
+                    class="btn-primary w-full instagram-gradient text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2">
                     <i class="fas fa-magic"></i>
                     <span>✨ 매직 생성하기</span>
                 </button>
-                
+
                 <!-- AI Consulting Box -->
-                <div id="consultingBox" class="hidden bg-gradient-to-r from-purple-50 to-pink-50 rounded-3xl shadow-lg p-6 border-2 border-purple-200">
+                <div id="consultingBox"
+                    class="hidden bg-gradient-to-r from-purple-50 to-pink-50 rounded-3xl shadow-lg p-6 border-2 border-purple-200">
                     <h3 class="text-lg font-semibold text-purple-900 mb-3">
                         <i class="fas fa-lightbulb mr-2"></i>
                         AI 컨설팅
                     </h3>
                     <p id="aiTip" class="text-purple-800"></p>
                 </div>
-                
+
                 <!-- Fixed Hashtags Settings -->
                 <div class="bg-white rounded-3xl shadow-lg p-8">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">
@@ -288,37 +302,42 @@
                     </h2>
                     <p class="text-sm text-gray-500 mb-4">자주 사용하는 해시태그를 저장하세요 (공백으로 구분)</p>
                     <div class="flex space-x-2">
-                        <input type="text" id="fixedHashtags" placeholder="예: #데일리 #맞팔" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition">
-                        <button onclick="saveFixedHashtags()" class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition">
+                        <input type="text" id="fixedHashtags" placeholder="예: #데일리 #맞팔"
+                            class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition">
+                        <button onclick="saveFixedHashtags()"
+                            class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition">
                             <i class="fas fa-save"></i>
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Copy Buttons -->
                 <div id="copyButtons" class="hidden grid grid-cols-3 gap-3">
-                    <button onclick="copyText('caption')" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-medium py-3 rounded-xl transition">
+                    <button onclick="copyText('caption')"
+                        class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-medium py-3 rounded-xl transition">
                         <i class="fas fa-copy mr-1"></i>
                         캡션만
                     </button>
-                    <button onclick="copyText('hashtags')" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-medium py-3 rounded-xl transition">
+                    <button onclick="copyText('hashtags')"
+                        class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-medium py-3 rounded-xl transition">
                         <i class="fas fa-hashtag mr-1"></i>
                         태그만
                     </button>
-                    <button onclick="copyText('all')" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-3 rounded-xl hover:shadow-lg transition">
+                    <button onclick="copyText('all')"
+                        class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-3 rounded-xl hover:shadow-lg transition">
                         <i class="fas fa-file-alt mr-1"></i>
                         전체
                     </button>
                 </div>
-                
+
             </div>
-            
+
             <!-- Right Panel: iPhone Mockup Preview -->
             <div class="flex items-start justify-center sticky top-24">
                 <div class="iphone-frame relative">
                     <div class="iphone-notch"></div>
                     <div class="iphone-screen">
-                        
+
                         <!-- Instagram Header -->
                         <div class="p-3 border-b border-gray-200 flex items-center justify-between bg-white">
                             <div class="flex items-center space-x-3">
@@ -329,15 +348,16 @@
                             </div>
                             <i class="fas fa-ellipsis-v text-gray-600"></i>
                         </div>
-                        
+
                         <!-- Post Image -->
-                        <div id="previewImageContainer" class="bg-gray-100 flex items-center justify-center" style="aspect-ratio: 1/1;">
+                        <div id="previewImageContainer" class="bg-gray-100 flex items-center justify-center"
+                            style="aspect-ratio: 1/1;">
                             <div class="text-center text-gray-400">
                                 <i class="fas fa-image text-6xl mb-3"></i>
                                 <p class="text-sm">이미지를 업로드하세요</p>
                             </div>
                         </div>
-                        
+
                         <!-- Interaction Icons -->
                         <div class="p-3 flex items-center justify-between bg-white">
                             <div class="flex items-center space-x-4">
@@ -347,38 +367,39 @@
                             </div>
                             <i class="far fa-bookmark text-2xl"></i>
                         </div>
-                        
+
                         <!-- Likes -->
                         <div class="px-3 pb-2 bg-white">
                             <p class="font-semibold text-sm">좋아요 1,234개</p>
                         </div>
-                        
+
                         <!-- Caption & Hashtags -->
                         <div id="captionArea" class="px-3 pb-3 bg-white">
                             <p class="text-sm text-gray-400">
                                 AI가 생성한 캡션과 해시태그가 여기에 표시됩니다...
                             </p>
                         </div>
-                        
+
                         <!-- Comments Preview -->
                         <div class="px-3 pb-3 bg-white border-b border-gray-200">
                             <p class="text-sm text-gray-400">댓글 45개 모두 보기</p>
                         </div>
-                        
+
                         <!-- Time -->
                         <div class="px-3 py-2 bg-white">
                             <p class="text-xs text-gray-400">5분 전</p>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
-            
+
         </div>
     </main>
-    
+
     <!-- Settings Modal -->
-    <div id="settingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div id="settingsModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-fadeIn">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">
@@ -389,33 +410,36 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Google Gemini API Key</label>
-                <input type="password" id="apiKeyInput" placeholder="AIza..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition">
+                <input type="password" id="apiKeyInput" placeholder="AIza..."
+                    class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition">
                 <p class="text-xs text-gray-500 mt-2">
                     <i class="fas fa-info-circle mr-1"></i>
                     API 키는 브라우저에만 저장되며 외부로 전송되지 않습니다
                 </p>
             </div>
-            
+
             <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
                 <p class="text-sm text-blue-800 mb-2">
                     <i class="fas fa-lightbulb mr-1"></i>
                     Google AI Studio에서 무료로 발급받을 수 있습니다
                 </p>
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sm text-blue-600 hover:underline">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                    class="text-sm text-blue-600 hover:underline">
                     → API 키 발급받기
                 </a>
             </div>
-            
-            <button onclick="saveApiKey()" class="w-full instagram-gradient text-white font-semibold py-3 rounded-xl hover:shadow-lg transition">
+
+            <button onclick="saveApiKey()"
+                class="w-full instagram-gradient text-white font-semibold py-3 rounded-xl hover:shadow-lg transition">
                 <i class="fas fa-save mr-2"></i>
                 저장하기
             </button>
         </div>
     </div>
-    
+
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-3xl shadow-2xl p-8 text-center">
@@ -424,36 +448,37 @@
             <p class="text-sm text-gray-500 mt-2">잠시만 기다려주세요 ✨</p>
         </div>
     </div>
-    
+
     <script>
         // Global Variables
         let uploadedImage = null;
+        let uploadedImageMimeType = 'image/jpeg'; // Default MIME type
         let generatedCaption = '';
         let generatedHashtags = '';
-        
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadApiKey();
             loadFixedHashtags();
             setupDragAndDrop();
         });
-        
+
         // Drag & Drop Setup
         function setupDragAndDrop() {
             const dropArea = document.getElementById('dropArea');
             const fileInput = document.getElementById('fileInput');
-            
+
             dropArea.addEventListener('click', () => fileInput.click());
-            
+
             dropArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 dropArea.classList.add('dragover');
             });
-            
+
             dropArea.addEventListener('dragleave', () => {
                 dropArea.classList.remove('dragover');
             });
-            
+
             dropArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 dropArea.classList.remove('dragover');
@@ -462,21 +487,24 @@
                     handleFile(files[0]);
                 }
             });
-            
+
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
                     handleFile(e.target.files[0]);
                 }
             });
         }
-        
+
         // Handle File Upload
         function handleFile(file) {
             if (!file.type.startsWith('image/')) {
                 showToast('이미지 파일만 업로드 가능합니다', 'error');
                 return;
             }
-            
+
+            // Save MIME type for API call
+            uploadedImageMimeType = file.type;
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 uploadedImage = e.target.result;
@@ -485,22 +513,22 @@
             };
             reader.readAsDataURL(file);
         }
-        
+
         // Update Preview Image
         function updatePreviewImage(imageSrc) {
             const container = document.getElementById('previewImageContainer');
             container.innerHTML = `<img src="${imageSrc}" class="insta-post-img" alt="Preview">`;
         }
-        
+
         // Settings Modal
         function openSettings() {
             document.getElementById('settingsModal').classList.remove('hidden');
         }
-        
+
         function closeSettings() {
             document.getElementById('settingsModal').classList.add('hidden');
         }
-        
+
         // API Key Management
         function saveApiKey() {
             const apiKey = document.getElementById('apiKeyInput').value.trim();
@@ -508,41 +536,41 @@
                 showToast('API Key를 입력해주세요', 'error');
                 return;
             }
-            
+
             localStorage.setItem('gemini_api_key', apiKey);
             showToast('API Key가 저장되었습니다 ✓', 'success');
             closeSettings();
         }
-        
+
         function loadApiKey() {
             const apiKey = localStorage.getItem('gemini_api_key');
             if (apiKey) {
                 document.getElementById('apiKeyInput').value = apiKey;
             }
         }
-        
+
         function getApiKey() {
             return localStorage.getItem('gemini_api_key');
         }
-        
+
         // Fixed Hashtags Management
         function saveFixedHashtags() {
             const hashtags = document.getElementById('fixedHashtags').value.trim();
             localStorage.setItem('fixed_hashtags', hashtags);
             showToast('고정 해시태그가 저장되었습니다 ✓', 'success');
         }
-        
+
         function loadFixedHashtags() {
             const hashtags = localStorage.getItem('fixed_hashtags');
             if (hashtags) {
                 document.getElementById('fixedHashtags').value = hashtags;
             }
         }
-        
+
         function getFixedHashtags() {
             return localStorage.getItem('fixed_hashtags') || '';
         }
-        
+
         // Generate Caption with Gemini API
         async function generateCaption() {
             // Validation
@@ -552,24 +580,24 @@
                 openSettings();
                 return;
             }
-            
+
             if (!uploadedImage) {
                 showToast('이미지를 먼저 업로드해주세요', 'error');
                 return;
             }
-            
+
             // Get options
             const mood = document.querySelector('input[name="mood"]:checked').value;
             const language = document.getElementById('language').value;
             const tmi = document.getElementById('tmiInput').value.trim();
-            
+
             // Show loading
             showLoading();
-            
+
             try {
                 // Prepare image (remove data:image/jpeg;base64, prefix)
                 const base64Image = uploadedImage.split(',')[1];
-                
+
                 // Build prompt
                 let prompt = `너는 인스타그램 인플루언서야. 이 사진을 보고 ${mood} 톤으로 작성해줘.\n`;
                 prompt += `언어: ${language}\n`;
@@ -582,7 +610,7 @@
                 prompt += `3. 이 사진의 장르를 분석해서 업로드 꿀팁을 한 줄로 작성\n\n`;
                 prompt += `반드시 아래 JSON 형식으로만 응답해줘:\n`;
                 prompt += `{\n  "caption": "캡션 내용",\n  "hashtags": "#태그1 #태그2 ...",\n  "tip": "꿀팁 내용"\n}`;
-                
+
                 // Call Gemini API
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -595,7 +623,7 @@
                                 { text: prompt },
                                 {
                                     inline_data: {
-                                        mime_type: "image/jpeg",
+                                        mime_type: uploadedImageMimeType,
                                         data: base64Image
                                     }
                                 }
@@ -603,49 +631,49 @@
                         }]
                     })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('API 호출 실패');
                 }
-                
+
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
-                
+
                 // Parse JSON response
                 const jsonMatch = text.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
                     throw new Error('응답 파싱 실패');
                 }
-                
+
                 const result = JSON.parse(jsonMatch[0]);
-                
+
                 // Add fixed hashtags
                 const fixedHashtags = getFixedHashtags();
                 if (fixedHashtags) {
                     result.hashtags += ' ' + fixedHashtags;
                 }
-                
+
                 // Save results
                 generatedCaption = result.caption;
                 generatedHashtags = result.hashtags;
-                
+
                 // Update UI
                 updateCaptionDisplay(result.caption, result.hashtags);
                 updateConsultingBox(result.tip);
-                
+
                 // Show copy buttons
                 document.getElementById('copyButtons').classList.remove('hidden');
-                
+
                 hideLoading();
                 showToast('생성 완료! 🎉', 'success');
-                
+
             } catch (error) {
                 hideLoading();
                 console.error('Error:', error);
                 showToast('생성 중 오류가 발생했습니다. API Key를 확인해주세요.', 'error');
             }
         }
-        
+
         // Update Caption Display
         function updateCaptionDisplay(caption, hashtags) {
             const captionArea = document.getElementById('captionArea');
@@ -657,7 +685,7 @@
                 <p class="text-sm text-blue-600 mt-2">${hashtags}</p>
             `;
         }
-        
+
         // Update Consulting Box
         function updateConsultingBox(tip) {
             const consultingBox = document.getElementById('consultingBox');
@@ -665,12 +693,12 @@
             aiTip.textContent = tip;
             consultingBox.classList.remove('hidden');
         }
-        
+
         // Copy Functions
         function copyText(mode) {
             let textToCopy = '';
-            
-            switch(mode) {
+
+            switch (mode) {
                 case 'caption':
                     textToCopy = generatedCaption;
                     break;
@@ -681,45 +709,46 @@
                     textToCopy = generatedCaption + '\n\n' + generatedHashtags;
                     break;
             }
-            
+
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast('클립보드에 복사되었습니다 ✓', 'success');
             }).catch(() => {
                 showToast('복사 실패', 'error');
             });
         }
-        
+
         // Loading Overlay
         function showLoading() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
         }
-        
+
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.add('hidden');
         }
-        
+
         // Toast Notification
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = 'toast';
-            
+
             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
             const color = type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400';
-            
+
             toast.innerHTML = `
                 <div class="flex items-center space-x-2">
                     <i class="fas ${icon} ${color}"></i>
                     <span>${message}</span>
                 </div>
             `;
-            
+
             document.body.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.remove();
             }, 3000);
         }
     </script>
-    
+
 </body>
+
 </html>
